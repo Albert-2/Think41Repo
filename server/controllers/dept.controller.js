@@ -1,4 +1,5 @@
-import Department from "../models/department.model.js";
+import Department from "../models/departments.model.js";
+import mongoose from "mongoose";
 
 // GET all departments
 export const getAllDepartments = async (req, res) => {
@@ -66,6 +67,41 @@ export const deleteDepartment = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Failed to delete department",
+      error: error.message,
+    });
+  }
+};
+
+export const getProductsByDepartmentId = async (req, res) => {
+  const { departmentId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(departmentId)) {
+    return res.status(400).json({ message: "Invalid department ID" });
+  }
+
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const [products, total] = await Promise.all([
+      Product.find({ department: departmentId })
+        .populate("department")
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments({ department: departmentId }),
+    ]);
+
+    res.status(200).json({
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      products,
+    });
+  } catch (error) {
+    console.error("Error fetching products by department:", error);
+    res.status(500).json({
+      message: "Failed to fetch products by department",
       error: error.message,
     });
   }

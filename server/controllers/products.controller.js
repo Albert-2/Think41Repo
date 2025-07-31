@@ -54,3 +54,38 @@ export const getProductById = async (req, res) => {
     });
   }
 };
+
+
+export const updateProduct = async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body; // Expect JSON with fields to update, e.g. { name, cost, department }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid product ID" });
+  }
+
+  // Optional: validate department ID if provided
+  if (updateData.department && !mongoose.Types.ObjectId.isValid(updateData.department)) {
+    return res.status(400).json({ message: "Invalid department ID" });
+  }
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    ).populate("department");
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({
+      message: "Failed to update product",
+      error: error.message,
+    });
+  }
+};
