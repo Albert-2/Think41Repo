@@ -3,6 +3,7 @@ import cors from "cors";
 import coneectDB from "./database/dbConnect.js";
 import importRoutes from "./routes/import.routes.js";
 import productRoutes from "./routes/products.routes.js";
+import departmentRoutes from "./routes/dept.routes.js";
 import dotenv from "dotenv";
 dotenv.config();
 coneectDB();
@@ -16,6 +17,8 @@ app.use(cors());
 
 //routes
 app.use("/api/import", importRoutes);
+app.use("/api/departments", departmentRoutes);
+
 app.use("/api/products", productRoutes);
 
 app.listen(process.env.PORT || 3000, () => {
